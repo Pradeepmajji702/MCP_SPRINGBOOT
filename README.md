@@ -91,8 +91,8 @@ Generates frontend code to call a specific API endpoint.
 
 ```bash
 # Clone the repository
-git clone https://github.com/pradeepmajji702/springboot-mcp.git
-cd springboot-mcp
+git clone https://github.com/Pradeepmajji702/MCP_SPRINGBOOT.git
+cd MCP_SPRINGBOOT
 
 # Install dependencies
 npm install
