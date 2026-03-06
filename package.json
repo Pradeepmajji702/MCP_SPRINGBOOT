@@ -1,0 +1,35 @@
+{
+  "name": "@yourusername/springboot-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Spring Boot Swagger API integration",
+  "main": "server.js",
+  "type": "module",
+  "bin": {
+    "springboot-mcp": "./server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "springboot",
+    "swagger",
+    "openapi",
+    "api"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/springboot-mcp.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "axios": "^1.13.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
