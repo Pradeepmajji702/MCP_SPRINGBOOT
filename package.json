@@ -1,5 +1,5 @@
 {
-  "name": "@yourusername/springboot-mcp",
+  "name": "@pradeepmajji702/springboot-mcp",
   "version": "1.0.0",
   "description": "MCP server for Spring Boot Swagger API integration",
   "main": "server.js",
@@ -19,11 +19,11 @@
     "openapi",
     "api"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Pradeep Majji <pradeepmajji702@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/springboot-mcp.git"
+    "url": "https://github.com/pradeepmajji702/springboot-mcp.git"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",

@@ -13,13 +13,13 @@ A Model Context Protocol (MCP) server that provides AI assistants with access to
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g @yourusername/springboot-mcp
+npm install -g @pradeepmajji702/springboot-mcp
 ```
 
 ### Local Installation
 
 ```bash
-npm install @yourusername/springboot-mcp
+npm install @pradeepmajji702/springboot-mcp
 ```
 
 ## Configuration
@@ -36,7 +36,7 @@ Add this to your MCP settings configuration file:
   "mcpServers": {
     "springboot-mcp": {
       "command": "npx",
-      "args": ["-y", "@yourusername/springboot-mcp"],
+      "args": ["-y", "@pradeepmajji702/springboot-mcp"],
       "env": {
         "SWAGGER_URL": "http://localhost:8080/v3/api-docs"
       }
@@ -91,7 +91,7 @@ Generates frontend code to call a specific API endpoint.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/springboot-mcp.git
+git clone https://github.com/pradeepmajji702/springboot-mcp.git
 cd springboot-mcp
 
 # Install dependencies
@@ -103,11 +103,7 @@ SWAGGER_URL=http://localhost:8080/v3/api-docs node server.js
 
 ## Publishing
 
-Before publishing, update:
-1. Package name in `package.json` (replace `@yourusername/springboot-mcp`)
-2. Author information
-3. Repository URL
-4. This README with your actual package name
+To publish this package to npm:
 
 Then publish:
 
