@@ -21,6 +21,81 @@ async function loadSwagger() {
   return swaggerCache;
 }
 
+// Resolve $ref references in schemas
+function resolveSchema(schema, swagger, visited = new Set()) {
+  if (!schema) return null;
+  
+  // Handle $ref
+  if (schema.$ref) {
+    const refPath = schema.$ref;
+    
+    // Prevent circular references
+    if (visited.has(refPath)) {
+      return { $ref: refPath, note: "Circular reference detected" };
+    }
+    visited.add(refPath);
+    
+    // Extract reference path (e.g., "#/components/schemas/User" -> ["components", "schemas", "User"])
+    const parts = refPath.replace(/^#\//, "").split("/");
+    
+    // Navigate to the referenced schema
+    let resolved = swagger;
+    for (const part of parts) {
+      resolved = resolved?.[part];
+    }
+    
+    if (resolved) {
+      // Recursively resolve any nested references
+      return resolveSchema(resolved, swagger, visited);
+    }
+    
+    return { $ref: refPath, note: "Reference not found" };
+  }
+  
+  // Handle arrays
+  if (schema.type === "array" && schema.items) {
+    return {
+      ...schema,
+      items: resolveSchema(schema.items, swagger, visited)
+    };
+  }
+  
+  // Handle objects with properties
+  if (schema.type === "object" && schema.properties) {
+    const resolvedProperties = {};
+    for (const [key, value] of Object.entries(schema.properties)) {
+      resolvedProperties[key] = resolveSchema(value, swagger, visited);
+    }
+    return {
+      ...schema,
+      properties: resolvedProperties
+    };
+  }
+  
+  // Handle allOf, anyOf, oneOf
+  if (schema.allOf) {
+    return {
+      ...schema,
+      allOf: schema.allOf.map(s => resolveSchema(s, swagger, visited))
+    };
+  }
+  if (schema.anyOf) {
+    return {
+      ...schema,
+      anyOf: schema.anyOf.map(s => resolveSchema(s, swagger, visited))
+    };
+  }
+  if (schema.oneOf) {
+    return {
+      ...schema,
+      oneOf: schema.oneOf.map(s => resolveSchema(s, swagger, visited))
+    };
+  }
+  
+  // Return schema as-is if no special handling needed
+  return schema;
+}
+
 const server = new Server(
   {
     name: "swagger-mcp",
@@ -109,14 +184,47 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       };
     }
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(endpoint, null, 2)
+      // Extract request body schema
+      let requestBodySchema = null;
+      if (endpoint.requestBody && endpoint.requestBody.content && endpoint.requestBody.content["application/json"]) {
+        const rawSchema = endpoint.requestBody.content["application/json"].schema;
+        requestBodySchema = resolveSchema(rawSchema, swagger);
+      }
+
+      // Extract response body schema (prefer 200, fallback to first available)
+      let responseBodySchema = null;
+      if (endpoint.responses) {
+        if (endpoint.responses["200"] && endpoint.responses["200"].content && endpoint.responses["200"].content["application/json"]) {
+          const rawSchema = endpoint.responses["200"].content["application/json"].schema;
+          responseBodySchema = resolveSchema(rawSchema, swagger);
+        } else {
+          // Fallback: find first response with application/json
+          for (const status in endpoint.responses) {
+            const resp = endpoint.responses[status];
+            if (resp.content && resp.content["application/json"] && resp.content["application/json"].schema) {
+              const rawSchema = resp.content["application/json"].schema;
+              responseBodySchema = resolveSchema(rawSchema, swagger);
+              break;
+            }
+          }
         }
-      ]
-    };
+      }
+
+      // Compose output
+      const output = {
+        endpoint,
+        requestBodySchema,
+        responseBodySchema
+      };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(output, null, 2)
+          }
+        ]
+      };
   }
 
 
@@ -131,6 +239,19 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       };
     }
 
+    // Extract and resolve schemas
+    let requestBodySchema = null;
+    if (endpoint.requestBody && endpoint.requestBody.content && endpoint.requestBody.content["application/json"]) {
+      const rawSchema = endpoint.requestBody.content["application/json"].schema;
+      requestBodySchema = resolveSchema(rawSchema, swagger);
+    }
+
+    let responseBodySchema = null;
+    if (endpoint.responses && endpoint.responses["200"] && endpoint.responses["200"].content && endpoint.responses["200"].content["application/json"]) {
+      const rawSchema = endpoint.responses["200"].content["application/json"].schema;
+      responseBodySchema = resolveSchema(rawSchema, swagger);
+    }
+
     let code = "";
 
     // React Axios Example
@@ -138,10 +259,11 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       code = `
 import axios from "axios";
 
-export async function callApi(payload) {
-  const res = await axios.${method}(
-    "http://localhost:8080${path}",
-    payload
+${requestBodySchema ? `// Request Type\ntype RequestPayload = ${JSON.stringify(requestBodySchema, null, 2)};\n` : ''}
+${responseBodySchema ? `// Response Type\ntype ResponseData = ${JSON.stringify(responseBodySchema, null, 2)};\n` : ''}
+export async function callApi(${requestBodySchema ? 'payload: RequestPayload' : ''}) {
+  const res = await axios.${method}${requestBodySchema ? `<ResponseData>` : ''}(
+    "http://localhost:8080${path}"${requestBodySchema ? ',\n    payload' : ''}
   );
   return res.data;
 }
@@ -153,12 +275,13 @@ export async function callApi(payload) {
       code = `
 import { HttpClient } from "@angular/common/http";
 
+${requestBodySchema ? `// Request Type\ninterface RequestPayload ${JSON.stringify(requestBodySchema, null, 2)}\n` : ''}
+${responseBodySchema ? `// Response Type\ninterface ResponseData ${JSON.stringify(responseBodySchema, null, 2)}\n` : ''}
 constructor(private http: HttpClient) {}
 
-callApi(payload: any) {
-  return this.http.${method}(
-    "http://localhost:8080${path}",
-    payload
+callApi(${requestBodySchema ? 'payload: RequestPayload' : ''}) {
+  return this.http.${method}${responseBodySchema ? '<ResponseData>' : ''}(
+    "http://localhost:8080${path}"${requestBodySchema ? ',\n    payload' : ''}
   );
 }
       `;
