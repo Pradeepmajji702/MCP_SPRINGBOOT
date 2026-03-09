@@ -194,17 +194,25 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       // Extract response body schema (prefer 200, fallback to first available)
       let responseBodySchema = null;
       if (endpoint.responses) {
-        if (endpoint.responses["200"] && endpoint.responses["200"].content && endpoint.responses["200"].content["application/json"]) {
-          const rawSchema = endpoint.responses["200"].content["application/json"].schema;
-          responseBodySchema = resolveSchema(rawSchema, swagger);
-        } else {
-          // Fallback: find first response with application/json
+        const response200 = endpoint.responses["200"];
+        if (response200 && response200.content) {
+          // Check for application/json or */* content types
+          const schema200 = response200.content["application/json"]?.schema || response200.content["*/*"]?.schema;
+          if (schema200) {
+            responseBodySchema = resolveSchema(schema200, swagger);
+          }
+        }
+        
+        // Fallback: find first response with any content
+        if (!responseBodySchema) {
           for (const status in endpoint.responses) {
             const resp = endpoint.responses[status];
-            if (resp.content && resp.content["application/json"] && resp.content["application/json"].schema) {
-              const rawSchema = resp.content["application/json"].schema;
-              responseBodySchema = resolveSchema(rawSchema, swagger);
-              break;
+            if (resp.content) {
+              const anySchema = resp.content["application/json"]?.schema || resp.content["*/*"]?.schema;
+              if (anySchema) {
+                responseBodySchema = resolveSchema(anySchema, swagger);
+                break;
+              }
             }
           }
         }
@@ -247,9 +255,11 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     }
 
     let responseBodySchema = null;
-    if (endpoint.responses && endpoint.responses["200"] && endpoint.responses["200"].content && endpoint.responses["200"].content["application/json"]) {
-      const rawSchema = endpoint.responses["200"].content["application/json"].schema;
-      responseBodySchema = resolveSchema(rawSchema, swagger);
+    if (endpoint.responses && endpoint.responses["200"] && endpoint.responses["200"].content) {
+      const schema200 = endpoint.responses["200"].content["application/json"]?.schema || endpoint.responses["200"].content["*/*"]?.schema;
+      if (schema200) {
+        responseBodySchema = resolveSchema(schema200, swagger);
+      }
     }
 
     let code = "";
