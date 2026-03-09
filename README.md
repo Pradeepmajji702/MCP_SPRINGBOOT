@@ -1,4 +1,4 @@
-# Spring Boot MCP Server
+# Swagger MCP Server
 
 A Model Context Protocol (MCP) server that provides AI assistants with access to Spring Boot backend APIs through Swagger/OpenAPI documentation.
 
@@ -13,13 +13,13 @@ A Model Context Protocol (MCP) server that provides AI assistants with access to
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g @pradeepmajji702/springboot-mcp
+npm install -g @pradeepmajji702/swagger-mcp
 ```
 
 ### Local Installation
 
 ```bash
-npm install @pradeepmajji702/springboot-mcp
+npm install @pradeepmajji702/swagger-mcp
 ```
 
 ## Configuration
@@ -34,9 +34,9 @@ Add this to your MCP settings configuration file:
 ```json
 {
   "mcpServers": {
-    "springboot-mcp": {
+    "swagger-mcp": {
       "command": "npx",
-      "args": ["-y", "@pradeepmajji702/springboot-mcp"],
+      "args": ["-y", "@pradeepmajji702/swagger-mcp"],
       "env": {
         "SWAGGER_URL": "http://localhost:8080/v3/api-docs"
       }

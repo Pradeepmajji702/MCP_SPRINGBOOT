@@ -6,9 +6,9 @@
 
 Replace these values in package.json:
 
-- **Package name**: Change `@yourusername/springboot-mcp` to your desired name
-  - For scoped packages: `@your-npm-username/springboot-mcp`
-  - For unscoped: `springboot-mcp` (if available)
+- **Package name**: Change `@yourusername/swagger-mcp` to your desired name
+  - For scoped packages: `@your-npm-username/swagger-mcp`
+  - For unscoped: `swagger-mcp` (if available)
   
 - **Author**: Add your name and email
   
@@ -20,7 +20,7 @@ Replace these values in package.json:
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/yourusername/springboot-mcp.git
+git remote add origin https://github.com/yourusername/swagger-mcp.git
 git push -u origin main
 ```
 
@@ -69,7 +69,7 @@ npm publish
 After publishing, users can install your package globally:
 
 ```bash
-npm install -g @yourusername/springboot-mcp
+npm install -g @yourusername/swagger-mcp
 ```
 
 And configure it in their MCP settings:
@@ -77,9 +77,9 @@ And configure it in their MCP settings:
 ```json
 {
   "mcpServers": {
-    "springboot-mcp": {
+    "swagger-mcp": {
       "command": "npx",
-      "args": ["-y", "@yourusername/springboot-mcp"],
+      "args": ["-y", "@yourusername/swagger-mcp"],
       "env": {
         "SWAGGER_URL": "http://localhost:8080/v3/api-docs"
       }
